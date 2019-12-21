@@ -2,7 +2,7 @@ import logging
 import sys
 import os
 head_folder_path = os.path.dirname(os.path.abspath(sys.argv[0]))+"/3Dpredictor"
-source_path = os.path.dirname(os.path.abspath(sys.argv[0]))+"/3Dpredictor/source"
+source_path = os.path.dirname(os.path.abspath(sys.argv[0]))+"/3Dpredictor/source/"
 sys.path.append(source_path)
 from Predictor import Predictor
 from Weight_funcs_modul import *
@@ -49,8 +49,8 @@ for training_file in training_files:
 
     for contact_type,apply_log in zip(["contacts"],[True]):
     #for contact_type,apply_log in zip(["contacts"],[False]):
-        for (filter,keep),shortcut in zip(zip(["CTCF_W"], [True]),
-                                          ["CTCF_W"]):#, "CTCF", "CTCF|contact_dist"]#"Loop","Loop|E1"]#,"Loop|E1|contact_dist","Loop|E1|contact_dist","Loop|E1|contact_dist|CTCF_L|CTCF_W|CTCF_R"] \
+        for (filter,keep),shortcut in zip(zip(["ARID3A"], [True]),
+                                          ["ARID3A"]):#, "CTCF", "CTCF|contact_dist"]#"Loop","Loop|E1"]#,"Loop|E1|contact_dist","Loop|E1|contact_dist","Loop|E1|contact_dist|CTCF_L|CTCF_W|CTCF_R"] \
                 # [True],#, True, True]),#,False,True,True]),
                 #                                ["CTCF|contact_dist|H3K27acll"])):#,"CTCF_only", "CTCF and contact_dist" ]):#, "no loop,no E1,no dist", \
                 #                                 #"loop,E1,dist", "loop,E1,dist,LRW_CTCF,Nbl"]):

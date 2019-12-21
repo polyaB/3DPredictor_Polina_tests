@@ -41,7 +41,7 @@ if __name__ == '__main__': #Requered for parallization, at least on Windows
         params.window_size = params.binsize #region around contact to be binned for predictors. Usually equal to binsize
         params.mindist = params.binsize*2+1 #minimum distance between contacting regions
         params.maxdist = 1500000
-        params.sample_size = 100 #how many contacts write to file
+        params.sample_size = 250000 #how many contacts write to file
         params.conttype = conttype
         params.max_cpus = 11
         params.keep_only_orient=False
@@ -167,54 +167,54 @@ if __name__ == '__main__': #Requered for parallization, at least on Windows
         # params.pgs = [OrientCtcfpg]
         # params.pgs = [RNAseqPG]
         params.pgs = [OrientCtcfpg, NotOrientCTCFpg, OrientBlocksCTCFpg,ConvergentPairPG, RNAseqPG]+chipPG+cagePG+metPG
-        # # Generate train
-        # train_chrs=[]
-        # [train_chrs.append("chr"+chr) for chr in chr_nums]
-        # if write_all_chrms_in_file:
-        #     train_file_name="training.RandOn"+ str(params)
-        #     params.out_file=output_folder+"_".join(train_chrs)+train_file_name
-        # for trainChrName in train_chrs:
-        #     print(trainChrName)
-        #     # training_file_name = "training.RandOn" + trainChrName + str(params) + ".txt"
-        #
-        #     # params.sample_size = len(params.contacts_reader.data[trainChrName])
-        #     params.interval = Interval(trainChrName,
-        #                           params.contacts_reader.get_min_contact_position(trainChrName),
-        #                           params.contacts_reader.get_max_contact_position(trainChrName))
-        #
-        #     # params.out_file = output_folder + training_file_name
-        #     if not write_all_chrms_in_file:
-        #         train_file_name = "training.RandOn" + str(params) + ".txt"
-        #         params.out_file = output_folder + params.interval.toFileName() + train_file_name
-        #     generate_data(params,saveFileDescription=True)
-        #     if not write_all_chrms_in_file:
-        #         del(params.out_file)
-        #     del (params.sample_size)
-
-
-        # Generate test
-        validate_chrs=[]
-        [validate_chrs.append("chr"+chr) for chr in chr_nums]#,"chr16", "chr17"]#, "chr18"]#, "chr18", "chr19", "chr20"]#,"chr14", "chr15"]
+        # Generate train
+        train_chrs=[]
+        [train_chrs.append("chr"+chr) for chr in chr_nums]
         if write_all_chrms_in_file:
-            validation_file_name = "validatingOrient." + str(params) + ".txt"
-            params.out_file = output_folder + "_".join(validate_chrs) + validation_file_name
-        for validateChrName in validate_chrs:
-            print("chromosome", validateChrName)
-            interval=Interval("chr14", 100800000, 103200000)
-            params.sample_size = len(params.contacts_reader.data[validateChrName])
+            train_file_name="training.RandOn"+ str(params)
+            params.out_file=output_folder+"_".join(train_chrs)+train_file_name
+        for trainChrName in train_chrs:
+            print(trainChrName)
+            # training_file_name = "training.RandOn" + trainChrName + str(params) + ".txt"
 
-            # params.interval = Interval(validateChrName,
-            #                            params.contacts_reader.get_min_contact_position(validateChrName),
-            #                            params.contacts_reader.get_max_contact_position(validateChrName))
-            params.interval = interval
-            logging.getLogger(__name__).info("Generating validation dataset for interval "+str(params.interval))
+            # params.sample_size = len(params.contacts_reader.data[trainChrName])
+            params.interval = Interval(trainChrName,
+                                  params.contacts_reader.get_min_contact_position(trainChrName),
+                                  params.contacts_reader.get_max_contact_position(trainChrName))
+
+            # params.out_file = output_folder + training_file_name
             if not write_all_chrms_in_file:
-                validation_file_name = "validatingOrient." + str(params) + ".txt"
-                params.out_file = output_folder + params.interval.toFileName() + validation_file_name
-            generate_data(params)
+                train_file_name = "training.RandOn" + str(params) + ".txt"
+                params.out_file = output_folder + params.interval.toFileName() + train_file_name
+            generate_data(params,saveFileDescription=True)
             if not write_all_chrms_in_file:
                 del(params.out_file)
             del (params.sample_size)
+
+
+        # # Generate test
+        # validate_chrs=[]
+        # [validate_chrs.append("chr"+chr) for chr in chr_nums]#,"chr16", "chr17"]#, "chr18"]#, "chr18", "chr19", "chr20"]#,"chr14", "chr15"]
+        # if write_all_chrms_in_file:
+        #     validation_file_name = "validatingOrient." + str(params) + ".txt"
+        #     params.out_file = output_folder + "_".join(validate_chrs) + validation_file_name
+        # for validateChrName in validate_chrs:
+        #     print("chromosome", validateChrName)
+        #     interval=Interval("chr14", 100800000, 103200000)
+        #     params.sample_size = len(params.contacts_reader.data[validateChrName])
+        #
+        #     # params.interval = Interval(validateChrName,
+        #     #                            params.contacts_reader.get_min_contact_position(validateChrName),
+        #     #                            params.contacts_reader.get_max_contact_position(validateChrName))
+        #     params.interval = interval
+        #     logging.getLogger(__name__).info("Generating validation dataset for interval "+str(params.interval))
+        #     if not write_all_chrms_in_file:
+        #         validation_file_name = "validatingOrient." + str(params) + ".txt"
+        #         params.out_file = output_folder + params.interval.toFileName() + validation_file_name
+        #     generate_data(params)
+        #     if not write_all_chrms_in_file:
+        #         del(params.out_file)
+        #     del (params.sample_size)
 
         # for interval in [Interval("chr2", 118000000, 129000000)]:
         # #                  Interval("chr10", 47900000, 53900000),
