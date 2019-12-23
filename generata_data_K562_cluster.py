@@ -61,6 +61,7 @@ if __name__ == '__main__': #Requered for parallization, at least on Windows
                                           coeff_fname=head_folder_path+"/input/normalized_coefficients/coefficient."+cell_type+"."+str(params.window_size)+".txt",
                                           max_cpus=params.max_cpus,
                                           fill_empty_contacts=fill_empty_contacts, maxdist=params.maxdist)
+        print(params.contacts_reader.data["chr19"]["chr"])
         #set window_size. usually equal to binsize
         assert params.window_size == params.contacts_reader.binsize
 

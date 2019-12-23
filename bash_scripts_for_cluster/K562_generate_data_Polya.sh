@@ -4,5 +4,5 @@
 #PBS -l cput=480:00:00
 #PBS -k oe
 
-cd ~/3DPredictor_Polina_tests/;python generata_data_K562_cluster.py 14 'contacts.gz'
+cd ~/3DPredictor_Polina_tests/;python generata_data_K562_cluster.py 7 'contacts.gz'
 

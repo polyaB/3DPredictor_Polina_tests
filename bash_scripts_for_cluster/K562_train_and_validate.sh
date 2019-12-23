@@ -1,5 +1,5 @@
-#PBS -q xl230g9q
-#PBS -l select=1:ncpus=1:mem=60g
+#PBS -q vkop2q
+#PBS -l select=1:ncpus=1:mem=150g
 #PBS -l walltime=24:00:00
 #PBS -l cput=240:00:00
 

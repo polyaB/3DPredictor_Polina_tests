@@ -47,11 +47,11 @@ if __name__ == '__main__': #Requered for parallization, at least on Windows
         params.window_size = params.binsize #region around contact to be binned for predictors. Usually equal to binsize
         params.mindist = params.binsize*2+1 #minimum distance between contacting regions
         params.maxdist = 1500000
-        params.sample_size = 100 #how many contacts write to file
+        params.sample_size = 250000 #how many contacts write to file
         params.conttype = conttype
         params.max_cpus = 11
         params.keep_only_orient=False
-        params.use_only_contacts_with_CTCF = "cont_with_CTCF"#"#"all_cont"#"cont_with_CTCF "
+        params.use_only_contacts_with_CTCF = "all_cont"#"cont_with_CTCF"#"#"all_cont"#"cont_with_CTCF "
 
         write_all_chrms_in_file=False #set True if you want write training file consisting several chromosomes
         fill_empty_contacts = False #set True if you want use all contacts in region, without empty contacts
@@ -59,45 +59,29 @@ if __name__ == '__main__': #Requered for parallization, at least on Windows
         logging.getLogger(__name__).debug("Using input folder "+input_folder)
 
         # Read contacts data
-        genome = fastaReader(input_folder + "sequence/hg38/hg38.fa", name="hg38")
+        genome = fastaReader(input_folder + "sequence/hg38/hg38.fa", name="hg38",excludeChromosomes=["chrM","chrY"])
         genome = genome.read_data()
-        print(genome.data.keys())
+        # print(genome)
+        # print(genome.data.keys())
         now = datetime.datetime.now()
         params.contacts_reader = hicReader(fname=input_folder + "H1/4DNFI2TK7L2F.hic", genome=genome, binsize=1000)
-        # params.contacts_reader = hicReader(fname=input_folder + "H1/control.hic", genome=genome, binsize=1000)
-        params.contacts_reader.read_data()
-        print(params.contacts_reader.norms)
-        print(params.contacts_reader.data)
-        raise NotImplementedError
-        # result = params.contacts_reader.get_contact(Interval("chr1", 0, 120000000))
+        # params.contacts_reader = hicReader(fname=input_folder + "H1/control.chr4.50KBhic", genome=genome, binsize=1000)
+        params.contacts_reader = params.contacts_reader.read_data()
 
-
-        # #Read contacts data
-        # params.contacts_reader = ContactsReader()
-        # contacts_files = []
-        # # contacts_files=[input_folder+ "5KBcontacts/chr"+chr_num+".5KB."+params.conttype ]
-        # [contacts_files.append(input_folder+ "5KBcontacts/chr"+chr+".5KB."+params.conttype) for chr in chr_nums]
-        # params.contacts_reader.read_files(contacts_files,
-        #                                   coeff_fname=head_folder_path+"/input/normalized_coefficients/coefficient."+cell_type+"."+str(params.window_size)+".txt",
-        #                                   max_cpus=params.max_cpus,
-        #                                   fill_empty_contacts=fill_empty_contacts, maxdist=params.maxdist)
-        # assert params.window_size == params.contacts_reader.binsize
-        #
-        # if params.use_only_contacts_with_CTCF == "cont_with_CTCF":
-        #     params.proportion = 1
-        #     params.contacts_reader.use_contacts_with_CTCF(CTCFfile=input_folder + "H1/CTCF/wgEncodeAwgTfbsHaibK562CtcfcPcr1xUniPk.narrowPeak.gz",
-        #                                                   maxdist=params.maxdist, proportion=params.proportion, keep_only_orient=params.keep_only_orient,
-        #                                                   CTCForientfile=input_folder + "H1/CTCF/wgEncodeAwgTfbsHaibK562CtcfcPcr1xUniPk.narrowPeak-orient.bed")
-        #     params.use_only_contacts_with_CTCF += str(params.contacts_reader.conts_with_ctcf)
-
+        if params.use_only_contacts_with_CTCF == "cont_with_CTCF":
+            params.proportion = 1
+            params.contacts_reader.use_contacts_with_CTCF(CTCFfile=input_folder + "H1/CTCF/CTCF_H1_conservative_peaks.bed.gz",
+                                                          maxdist=params.maxdist, proportion=params.proportion, keep_only_orient=params.keep_only_orient,
+                                                          CTCForientfile=input_folder + "H1/CTCF/CTCF_H1_conservative_peaks_orient.bed")
+            params.use_only_contacts_with_CTCF += str(params.contacts_reader.conts_with_ctcf)
 
         # Read CTCF data
         logging.info('create CTCF_PG')
-        params.ctcf_reader = ChiPSeqReader(input_folder + "CTCF/CTCF_H1_conservative_peaks.bed.gz",
+        params.ctcf_reader = ChiPSeqReader(input_folder + "H1/CTCF/CTCF_H1_conservative_peaks.bed.gz",
                                                             name="CTCF")
         params.ctcf_reader.read_file()
         params.ctcf_reader.set_sites_orientation(
-            input_folder + "CTCF/")
+            input_folder + "H1/CTCF/CTCF_H1_conservative_peaks_orient.bed")
         if params.keep_only_orient:
             params.ctcf_reader.keep_only_with_orient_data()
 
@@ -108,11 +92,11 @@ if __name__ == '__main__': #Requered for parallization, at least on Windows
                                                          N_closest=4)
 
         # Read CTCF data and drop sites w/o known orientation
-        params.ctcf_reader_orientOnly = ChiPSeqReader(input_folder + "CTCF/CTCF_H1_conservative_peaks.bed.gz",
+        params.ctcf_reader_orientOnly = ChiPSeqReader(input_folder + "H1/CTCF/CTCF_H1_conservative_peaks.bed.gz",
                                                             name="CTCF")
         params.ctcf_reader_orientOnly.read_file()
         params.ctcf_reader_orientOnly.set_sites_orientation(
-            input_folder + "CTCF/")
+            input_folder + "H1/CTCF/CTCF_H1_conservative_peaks_orient.bed")
         params.ctcf_reader_orientOnly.keep_only_with_orient_data()
         OrientBlocksCTCFpg = OrientBlocksPredictorGenerator(params.ctcf_reader_orientOnly,
                                                              params.window_size)
@@ -121,14 +105,14 @@ if __name__ == '__main__': #Requered for parallization, at least on Windows
         #Read other chip-seq data
         logging.info('create chipPG')
         chipPG = []
-        filenames_df = pd.read_csv(input_folder + "peaks/filenames.csv")
+        filenames_df = pd.read_csv(input_folder + "H1/Chip-seq/filenames.csv")
         # assert len(os.listdir(input_folder + 'peaks/')) - 1 == len(filenames_df['name'])
         # print(len(os.listdir(input_folder + 'peaks/')))
         # print(len(filenames_df['name']))
         # proteins=set(["RAD21", "SMC3", "POLR2A", "H3K27ac", "H3K27me3", "DNase-seq", "H3K9me3", "H3K4me1", "H3K4me2", "H3K4me3", "YY1"])
         for index, row in filenames_df.iterrows():
             # if row["name"] in proteins:
-                params.chip_reader = ChiPSeqReader(input_folder + 'peaks/' + row["filename"] + '.gz', name=row['name'])
+                params.chip_reader = ChiPSeqReader(input_folder + 'H1/Chip-seq/' + row["filename"], name=row['name'])
                 params.chip_reader.read_file()
                 chipPG.append(SmallChipSeqPredictorGenerator(params.chip_reader,params.window_size,N_closest=4))
 
@@ -145,55 +129,55 @@ if __name__ == '__main__': #Requered for parallization, at least on Windows
         #                                           window_size=params.window_size,
         #                                           N_closest=3)
 
-        params.pgs = [OrientCtcfpg, NotOrientCTCFpg, OrientBlocksCTCFpg,ConvergentPairPG, RNAseqPG]+chipPG+cagePG+metPG
-        # Generate train
-        train_chrs=[]
-        [train_chrs.append("chr"+chr) for chr in chr_nums]
-        if write_all_chrms_in_file:
-            train_file_name="training.RandOn"+ str(params)
-            params.out_file=output_folder+"_".join(train_chrs)+train_file_name
-        for trainChrName in train_chrs:
-            print(trainChrName)
-            # training_file_name = "training.RandOn" + trainChrName + str(params) + ".txt"
-
-            # params.sample_size = len(params.contacts_reader.data[trainChrName])
-            params.interval = Interval(trainChrName,
-                                  params.contacts_reader.get_min_contact_position(trainChrName),
-                                  params.contacts_reader.get_max_contact_position(trainChrName))
-
-            # params.out_file = output_folder + training_file_name
-            if not write_all_chrms_in_file:
-                train_file_name = "training.RandOn" + str(params) + ".txt"
-                params.out_file = output_folder + params.interval.toFileName() + train_file_name
-            generate_data(params,saveFileDescription=True)
-            if not write_all_chrms_in_file:
-                del(params.out_file)
-            del (params.sample_size)
-
-
-        # # Generate test
-        # validate_chrs=[]
-        # [validate_chrs.append("chr"+chr) for chr in chr_nums]#,"chr16", "chr17"]#, "chr18"]#, "chr18", "chr19", "chr20"]#,"chr14", "chr15"]
+        params.pgs = [OrientCtcfpg, NotOrientCTCFpg, OrientBlocksCTCFpg,ConvergentPairPG]+chipPG#+cagePG+metPG
+        # # Generate train
+        # train_chrs=[]
+        # [train_chrs.append("chr"+chr) for chr in chr_nums]
         # if write_all_chrms_in_file:
-        #     validation_file_name = "validatingOrient." + str(params) + ".txt"
-        #     params.out_file = output_folder + "_".join(validate_chrs) + validation_file_name
-        # for validateChrName in validate_chrs:
-        #     print("chromosome", validateChrName)
-        #     interval=Interval("chr14", 100800000, 103200000)
-        #     params.sample_size = len(params.contacts_reader.data[validateChrName])
+        #     train_file_name="training.RandOn"+ str(params)
+        #     params.out_file=output_folder+"_".join(train_chrs)+train_file_name
+        # for trainChrName in train_chrs:
+        #     print(trainChrName)
+        #     # training_file_name = "training.RandOn" + trainChrName + str(params) + ".txt"
         #
-        #     # params.interval = Interval(validateChrName,
-        #     #                            params.contacts_reader.get_min_contact_position(validateChrName),
-        #     #                            params.contacts_reader.get_max_contact_position(validateChrName))
-        #     params.interval = interval
-        #     logging.getLogger(__name__).info("Generating validation dataset for interval "+str(params.interval))
+        #     params.sample_size = len(params.contacts_reader.data[trainChrName])
+        #     params.interval = Interval(trainChrName,
+        #                           params.contacts_reader.get_min_contact_position(trainChrName),
+        #                           params.contacts_reader.get_max_contact_position(trainChrName))
+        #
+        #     # params.out_file = output_folder + training_file_name
         #     if not write_all_chrms_in_file:
-        #         validation_file_name = "validatingOrient." + str(params) + ".txt"
-        #         params.out_file = output_folder + params.interval.toFileName() + validation_file_name
-        #     generate_data(params)
+        #         train_file_name = "training.RandOn" + str(params) + ".txt"
+        #         params.out_file = output_folder + params.interval.toFileName() + train_file_name
+        #     generate_data(params,saveFileDescription=True)
         #     if not write_all_chrms_in_file:
         #         del(params.out_file)
         #     del (params.sample_size)
+
+
+        # Generate test
+        validate_chrs=[]
+        [validate_chrs.append("chr"+chr) for chr in chr_nums]#,"chr16", "chr17"]#, "chr18"]#, "chr18", "chr19", "chr20"]#,"chr14", "chr15"]
+        if write_all_chrms_in_file:
+            validation_file_name = "validatingOrient." + str(params) + ".txt"
+            params.out_file = output_folder + "_".join(validate_chrs) + validation_file_name
+        for validateChrName in validate_chrs:
+            print("chromosome", validateChrName)
+            interval=Interval("chr4", 86600000, 87700000)
+            params.sample_size = len(params.contacts_reader.data[validateChrName])
+
+            # params.interval = Interval(validateChrName,
+            #                            params.contacts_reader.get_min_contact_position(validateChrName),
+            #                            params.contacts_reader.get_max_contact_position(validateChrName))
+            params.interval = interval
+            logging.getLogger(__name__).info("Generating validation dataset for interval "+str(params.interval))
+            if not write_all_chrms_in_file:
+                validation_file_name = "validatingOrient." + str(params) + ".txt"
+                params.out_file = output_folder + params.interval.toFileName() + validation_file_name
+            generate_data(params)
+            if not write_all_chrms_in_file:
+                del(params.out_file)
+            del (params.sample_size)
 
         # for interval in [Interval("chr2", 118000000, 129000000)]:
         # #                  Interval("chr10", 47900000, 53900000),
