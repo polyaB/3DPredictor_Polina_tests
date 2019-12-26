@@ -47,11 +47,11 @@ if __name__ == '__main__': #Requered for parallization, at least on Windows
         params.window_size = params.binsize #region around contact to be binned for predictors. Usually equal to binsize
         params.mindist = params.binsize*2+1 #minimum distance between contacting regions
         params.maxdist = 1500000
-        params.sample_size = 250000 #how many contacts write to file
+        params.sample_size = 500000 #how many contacts write to file
         params.conttype = conttype
         params.max_cpus = 11
         params.keep_only_orient=False
-        params.use_only_contacts_with_CTCF = "all_cont"#"cont_with_CTCF"#"#"all_cont"#"cont_with_CTCF "
+        params.use_only_contacts_with_CTCF = "all_cont"#"all_cont"#"cont_with_CTCF"#"#"all_cont"#"cont_with_CTCF "
 
         write_all_chrms_in_file=False #set True if you want write training file consisting several chromosomes
         fill_empty_contacts = False #set True if you want use all contacts in region, without empty contacts
@@ -163,8 +163,8 @@ if __name__ == '__main__': #Requered for parallization, at least on Windows
             params.out_file = output_folder + "_".join(validate_chrs) + validation_file_name
         for validateChrName in validate_chrs:
             print("chromosome", validateChrName)
-            interval=Interval("chr4", 86600000, 87700000)
-            params.sample_size = len(params.contacts_reader.data[validateChrName])
+            interval=Interval("chr7", 86600000, 87000000)
+            # params.sample_size = len(params.contacts_reader.data[validateChrName])
 
             # params.interval = Interval(validateChrName,
             #                            params.contacts_reader.get_min_contact_position(validateChrName),
