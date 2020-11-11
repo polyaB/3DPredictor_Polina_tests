@@ -16,7 +16,7 @@ logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%I:%M:%S', level=
 
 expected_folder = "/mnt/scratch/ws/psbelokopytova/202001051010polina_data/3DPredictor/input/expected/K562/5KB/"
 cell_type = 'H1'
-out_dir = "/mnt/scratch/ws/psbelokopytova/202001051010polina_data/3DPredictor/out/"
+out_dir = "/mnt/scratch/ws/psbelokopytova/202002281332polina_data_2019/3DPredictor/out/"
 # contact_type = ["oe"]
 # not_cor_predictors_file = "/mnt/scratch/ws/psbelokopytova/202001051010polina_data/3DPredictor/out/Hepat/validating_chrms_1/not_cor_predictors0.8"
 # suffix = ".gz.8.1500000.50001.25000.25000.txt"
@@ -25,8 +25,9 @@ out_dir = "/mnt/scratch/ws/psbelokopytova/202001051010polina_data/3DPredictor/ou
 # deletion =Interval("chr10",60755595, 60761099)
 deletion = "no_deletion"
 training_files = [
-    "/mnt/scratch/ws/psbelokopytova/202001051010polina_data/3DPredictor/out/H1/Interval_chr10_13000_133787000training.RandOn1000.contacts.gz.False.11.1500000.2001.1.270376.cont_with_CTCF2833443.1000.txt",
-   ]
+    # "/mnt/scratch/ws/psbelokopytova/202001051010polina_data/3DPredictor/out/H1/Interval_chr10_13000_133787000training.RandOn1000.contacts.gz.False.11.1500000.2001.1.270376.cont_with_CTCF2833443.1000.txt",
+   "/mnt/scratch/ws/psbelokopytova/202002281332polina_data_2019/3DPredictor/out/H1/Interval_chr10_51000_133764000validatingOrient.1000.contacts.gz.False.11.1500000.2001.1.270376.cont_with_CTCF135188.1000.txt",
+]
 
 # predictors_data=pd.read_csv(not_cor_predictors_file,sep="\t")
 # predictors=str("|".join(list(predictors_data["predictors"])))
@@ -36,8 +37,10 @@ training_files = [
 for training_file in training_files:
     validation_files = [
     # "/mnt/scratch/ws/psbelokopytova/202001051010polina_data/3DPredictor/out/H1/Interval_chr7_86600000_87300000validatingOrient.1000.contacts.gz.False.11.1500000.2001.26953600.all_cont.1000.txt",
-    "/mnt/scratch/ws/psbelokopytova/202001051010polina_data/3DPredictor/out/H1/Interval_chr7_86600000_86710000validatingOrient.1000.contacts.gz.False.11.1500000.2001.500000.all_cont.1000.txt",
-
+    # "/mnt/scratch/ws/psbelokopytova/202001051010polina_data/3DPredictor/out/H1/Interval_chr7_86600000_86710000validatingOrient.1000.contacts.gz.False.11.1500000.2001.500000.all_cont.1000.txt",
+    # "/mnt/scratch/ws/psbelokopytova/202001051010polina_data/3DPredictor/out/H1/Interval_chr7_86600000_87400000validatingOrient.1000.contacts.gz.False.11.1500000.2001.500000.all_cont.1000.txt",
+    # "/mnt/scratch/ws/psbelokopytova/202001051010polina_data/3DPredictor/out/H1/Interval_chr7_86600000_89000000validatingOrient.1000.contacts.gz.False.11.1500000.2001.500000.all_cont.1000.txt",
+    "/mnt/scratch/ws/psbelokopytova/202001051010polina_data/3DPredictor/out/H1/Interval_chr7_86600000_96200000validatingOrient.1000.contacts.gz.False.11.1500000.2001.26953600.all_cont.1000.txt",
     ]
     #Some examples of predictors filtering:
     #predictor.filter_predictors(".*CTCF.*|.*RNA.*", keep=False) #-- discard CTCF AND RNA
@@ -46,8 +49,8 @@ for training_file in training_files:
 
     for contact_type,apply_log in zip(["contacts"],[True]):
     #for contact_type,apply_log in zip(["contacts"],[False]):
-        for (filter,keep),shortcut in zip(zip([".*"], [True]),
-                                          ["all"]):#, "CTCF", "CTCF|contact_dist"]#"Loop","Loop|E1"]#,"Loop|E1|contact_dist","Loop|E1|contact_dist","Loop|E1|contact_dist|CTCF_L|CTCF_W|CTCF_R"] \
+        for (filter,keep),shortcut in zip(zip(["CTCF|RNA|contact_dist"], [True]),
+                                          ["CTCF|RNA|contact_dist"]):#, "CTCF", "CTCF|contact_dist"]#"Loop","Loop|E1"]#,"Loop|E1|contact_dist","Loop|E1|contact_dist","Loop|E1|contact_dist|CTCF_L|CTCF_W|CTCF_R"] \
                 # [True],#, True, True]),#,False,True,True]),
                 #                                ["CTCF|contact_dist|H3K27acll"])):#,"CTCF_only", "CTCF and contact_dist" ]):#, "no loop,no E1,no dist", \
                 #                                 #"loop,E1,dist", "loop,E1,dist,LRW_CTCF,Nbl"]):
@@ -79,7 +82,7 @@ for training_file in training_files:
                     #     predictor.filter_predictors(filter2, keep2)
                     trained_predictor = predictor.train(shortcut=shortcut, apply_log = apply_log,
                                                         weightsFunc = weightFunc, show_plot=False, out_dir=out_dir+"models/")
-                    trained_predictor.out_dir = "/mnt/scratch/ws/psbelokopytova/202001051010polina_data/3DPredictor/out/models/"
+                    trained_predictor.out_dir = "/mnt/scratch/ws/psbelokopytova/202002281332polina_data_2019/3DPredictor/out/models/"
                     trained_predictor.draw_Feature_importances(show_plot=False)
                     for validation_file in validation_files:
                         cell_type = "H1"

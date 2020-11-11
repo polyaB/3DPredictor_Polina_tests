@@ -28,6 +28,10 @@ chr_num=sys.argv[1]
 chr_nums=chr_num.split(",")
 conttype = sys.argv[2]
 
+# chr_num="7"
+# chr_nums=chr_num.split(",")
+# conttype = "contacts.gz"
+
 # chr_num="12"
 # conttype = "contacts.gz"
 logging.basicConfig(format='%(asctime)s %(name)s: %(message)s', datefmt='%I:%M:%S', level=logging.DEBUG)
@@ -38,9 +42,9 @@ if __name__ == '__main__': #Requered for parallization, at least on Windows
         print("hello")
         logging.basicConfig(format='%(asctime)s %(name)s: %(message)s', datefmt='%I:%M:%S', level=logging.DEBUG)
 
-        input_folder ="/mnt/scratch/ws/psbelokopytova/202001051010polina_data/3DPredictor/input/"
-        output_folder = "/mnt/scratch/ws/psbelokopytova/202001051010polina_data/3DPredictor/out/H1/"
-        cell_type="K562"
+        input_folder ="/mnt/scratch/ws/psbelokopytova/202002281332polina_data_2019/3DPredictor/input/"
+        output_folder = "/mnt/scratch/ws/psbelokopytova/202002281332polina_data_2019/3DPredictor/out/H1/"
+        cell_type="H1"
         lengths_dict = {'chr1': 1494930, 'chr3': 609806, 'chr5': 518646, 'chr7': 682860, 'chr11': 726290, 'chr13': 115324}
         params = Parameters()
         params.binsize = 1000 #sequence resolution of contacts data. Use for finding of normalized coefficient file
@@ -51,7 +55,7 @@ if __name__ == '__main__': #Requered for parallization, at least on Windows
         params.conttype = conttype
         params.max_cpus = 11
         params.keep_only_orient=False
-        params.use_only_contacts_with_CTCF = "all_cont"#"all_cont"#"cont_with_CTCF"#"#"all_cont"#"cont_with_CTCF "
+        params.use_only_contacts_with_CTCF = "cont_with_CTCF"#"all_cont"#"cont_with_CTCF"#"#"all_cont"#"cont_with_CTCF "
 
         write_all_chrms_in_file=False #set True if you want write training file consisting several chromosomes
         fill_empty_contacts = False #set True if you want use all contacts in region, without empty contacts
@@ -59,7 +63,7 @@ if __name__ == '__main__': #Requered for parallization, at least on Windows
         logging.getLogger(__name__).debug("Using input folder "+input_folder)
 
         # Read contacts data
-        genome = fastaReader(input_folder + "sequence/hg38/hg38.fa", name="hg38",excludeChromosomes=["chrM","chrY"])
+        genome = fastaReader(input_folder + "sequence/hg38/hg38.fa", name="hg38",useOnlyChromosomes=["chr10"])
         genome = genome.read_data()
         # print(genome)
         # print(genome.data.keys())
@@ -116,20 +120,20 @@ if __name__ == '__main__': #Requered for parallization, at least on Windows
                 params.chip_reader.read_file()
                 chipPG.append(SmallChipSeqPredictorGenerator(params.chip_reader,params.window_size,N_closest=4))
 
-        # #Read RNA-Seq data
-        # params.RNAseqReader = RNAseqReader(fname=input_folder + "RNA-seq/rna-seqPolyA.tsvpre.txt",
-        #                                    name="RNA")
-        # params.RNAseqReader.read_file(rename={ "Gene name": "gene",
-        #                       "Gene start (bp)": "start",
-        #                       "Gene end (bp)": "end",
-        #                       "Chromosome/scaffold name": "chr",
-        #                       "FPKM": "sigVal"},
-        #               sep="\t")
-        # RNAseqPG = SmallChipSeqPredictorGenerator(params.RNAseqReader,
-        #                                           window_size=params.window_size,
-        #                                           N_closest=3)
+        #Read RNA-Seq data
+        params.RNAseqReader = RNAseqReader(fname=input_folder + "H1/RNA-seq/ENCFF059UBK.tsv.pre",
+                                           name="RNA")
+        params.RNAseqReader.read_file(rename={ "Gene name": "gene",
+                              "Gene start (bp)": "start",
+                              "Gene end (bp)": "end",
+                              "Chromosome/scaffold name": "chr",
+                              "FPKM": "sigVal"},
+                      sep="\t")
+        RNAseqPG = SmallChipSeqPredictorGenerator(params.RNAseqReader,
+                                                  window_size=params.window_size,
+                                                  N_closest=3)
 
-        params.pgs = [OrientCtcfpg, NotOrientCTCFpg, OrientBlocksCTCFpg,ConvergentPairPG]+chipPG#+cagePG+metPG
+        params.pgs = [OrientCtcfpg, NotOrientCTCFpg, OrientBlocksCTCFpg,ConvergentPairPG, RNAseqPG]+chipPG#+cagePG+metPG
         # # Generate train
         # train_chrs=[]
         # [train_chrs.append("chr"+chr) for chr in chr_nums]
@@ -163,13 +167,13 @@ if __name__ == '__main__': #Requered for parallization, at least on Windows
             params.out_file = output_folder + "_".join(validate_chrs) + validation_file_name
         for validateChrName in validate_chrs:
             print("chromosome", validateChrName)
-            interval=Interval("chr7", 86600000, 87000000)
-            # params.sample_size = len(params.contacts_reader.data[validateChrName])
+            # interval=Interval("chr7", 86600000, 96200000)
+            params.sample_size = len(params.contacts_reader.data[validateChrName])
 
-            # params.interval = Interval(validateChrName,
-            #                            params.contacts_reader.get_min_contact_position(validateChrName),
-            #                            params.contacts_reader.get_max_contact_position(validateChrName))
-            params.interval = interval
+            params.interval = Interval(validateChrName,
+                                       params.contacts_reader.get_min_contact_position(validateChrName),
+                                       params.contacts_reader.get_max_contact_position(validateChrName))
+            # params.interval = interval
             logging.getLogger(__name__).info("Generating validation dataset for interval "+str(params.interval))
             if not write_all_chrms_in_file:
                 validation_file_name = "validatingOrient." + str(params) + ".txt"

@@ -42,8 +42,8 @@ if __name__ == '__main__': #Requered for parallization, at least on Windows
         print("hello")
         logging.basicConfig(format='%(asctime)s %(name)s: %(message)s', datefmt='%I:%M:%S', level=logging.DEBUG)
 
-        input_folder ="/mnt/scratch/ws/psbelokopytova/202002281332polina_data_2019/3DPredictor/input/"
-        output_folder = "/mnt/scratch/ws/psbelokopytova/202002281332polina_data_2019/3DPredictor/out/mast_cells/"
+        input_folder ="/mnt/scratch/ws/psbelokopytova/202011291709Polya_data/3DPredictor/input/"
+        output_folder = "/mnt/scratch/ws/psbelokopytova/202011291709Polya_data/3DPredictor/out/mast_cells/"
         cell_type="mast_cells"
         lengths_dict = {'chr1': 1494930, 'chr3': 609806, 'chr5': 518646, 'chr7': 682860, 'chr11': 726290, 'chr13': 115324}
         params = Parameters()
@@ -51,44 +51,49 @@ if __name__ == '__main__': #Requered for parallization, at least on Windows
         params.window_size = params.binsize #region around contact to be binned for predictors. Usually equal to binsize
         params.mindist = params.binsize*2+1 #minimum distance between contacting regions
         params.maxdist = 1500000
-        params.sample_size = 500000 #how many contacts write to file
+        # params.sample_size = 500000 #how many contacts write to file
+        params.sample_size = 2 #how many contacts write to file
         params.conttype = conttype
         params.max_cpus = 11
         params.keep_only_orient=False
         params.use_only_contacts_with_CTCF = "all_cont"#"all_cont"#"cont_with_CTCF"#"#"all_cont"#"cont_with_CTCF "
-
+        rearrangement=False
+        deletion = Interval("chr5", 75852814, 75881252)
         write_all_chrms_in_file=False #set True if you want write training file consisting several chromosomes
-        fill_empty_contacts = True #set True if you want use all contacts in region, without empty contacts
+        fill_empty_contacts = False #set True if you want use all contacts in region, without empty contacts
 
         logging.getLogger(__name__).debug("Using input folder "+input_folder)
 
         # Read contacts data
-        genome = fastaReader(input_folder + "sequence/hg38/hg38.fa", name="hg38",useOnlyChromosomes=["chr3"])
+        genome = fastaReader(input_folder + "sequence/hg38/hg38.fa", name="hg38",useOnlyChromosomes=["chr5"])
         genome = genome.read_data()
         # print(genome)
         # print(genome.data.keys())
         now = datetime.datetime.now()
         params.contacts_reader = hicReader(fname=input_folder + "H1/4DNFI2TK7L2F.hic", genome=genome, binsize=1000)
         # params.contacts_reader = hicReader(fname=input_folder + "H1/control.chr4.50KBhic", genome=genome, binsize=1000)
-        params.contacts_reader = params.contacts_reader.read_data()
+        params.contacts_reader = params.contacts_reader.read_data(fill_empty_contacts=fill_empty_contacts, noDump=True)
 
         if params.use_only_contacts_with_CTCF == "cont_with_CTCF":
             params.proportion = 1
-            params.contacts_reader.use_contacts_with_CTCF(CTCFfile=input_folder + "H1/CTCF/CTCF_H1_conservative_peaks.bed.gz",
+            params.contacts_reader.use_contacts_with_CTCF(CTCFfile=input_folder + "NPC/CTCF/GSE96107_NPC_CTCF.IDR0.05.filt.narrowPeak",
                                                           maxdist=params.maxdist, proportion=params.proportion, keep_only_orient=params.keep_only_orient,
-                                                          CTCForientfile=input_folder + "H1/CTCF/CTCF_H1_conservative_peaks_orient.bed")
+                                                          CTCForientfile=input_folder + "NPC/CTCF/GSE96107_NPC_CTCF.IDR0.05.filt.narrowPeak-orient.bed")
             params.use_only_contacts_with_CTCF += str(params.contacts_reader.conts_with_ctcf)
-
+        #make deletion
+        if rearrangement:
+            params.contacts_reader.delete_region(deletion)
         # Read CTCF data
         logging.info('create CTCF_PG')
-        params.ctcf_reader = ChiPSeqReader(input_folder + "mast_cells/CTCF/SRR908255.nodup.pval0.01.500K.filt.narrowPeak.gz",
+        params.ctcf_reader = ChiPSeqReader(input_folder + "NPC/CTCF/GSE96107_NPC_CTCF.IDR0.05.filt.narrowPeak",
                                                             name="CTCF")
         params.ctcf_reader.read_file()
         params.ctcf_reader.set_sites_orientation(
-            input_folder + "mast_cells/CTCF/SRR908255_mast_CTCF_orient.bed")
+            input_folder + "NPC/CTCF/GSE96107_NPC_CTCF.IDR0.05.filt.narrowPeak-orient.bed")
         if params.keep_only_orient:
             params.ctcf_reader.keep_only_with_orient_data()
-
+        if rearrangement:
+            params.ctcf_reader.delete_region(deletion)
         OrientCtcfpg = SitesOrientPredictorGenerator(params.ctcf_reader,
                                                      N_closest=4)
         NotOrientCTCFpg = SmallChipSeqPredictorGenerator(params.ctcf_reader,
@@ -96,12 +101,15 @@ if __name__ == '__main__': #Requered for parallization, at least on Windows
                                                          N_closest=4)
 
         # Read CTCF data and drop sites w/o known orientation
-        params.ctcf_reader_orientOnly = ChiPSeqReader(input_folder + "mast_cells/CTCF/SRR908255.nodup.pval0.01.500K.filt.narrowPeak.gz",
+        params.ctcf_reader_orientOnly = ChiPSeqReader(input_folder + "NPC/CTCF/GSE96107_NPC_CTCF.IDR0.05.filt.narrowPeak",
                                                             name="CTCF")
         params.ctcf_reader_orientOnly.read_file()
         params.ctcf_reader_orientOnly.set_sites_orientation(
-            input_folder + "mast_cells/CTCF/SRR908255_mast_CTCF_orient.bed")
+            input_folder + "NPC/CTCF/GSE96107_NPC_CTCF.IDR0.05.filt.narrowPeak-orient.bed")
         params.ctcf_reader_orientOnly.keep_only_with_orient_data()
+        if rearrangement:
+            params.ctcf_reader_orientOnly.delete_region(deletion)
+
         OrientBlocksCTCFpg = OrientBlocksPredictorGenerator(params.ctcf_reader_orientOnly,
                                                              params.window_size)
         ConvergentPairPG = ConvergentPairPredictorGenerator(params.ctcf_reader, binsize=params.window_size)
@@ -121,14 +129,16 @@ if __name__ == '__main__': #Requered for parallization, at least on Windows
         #         chipPG.append(SmallChipSeqPredictorGenerator(params.chip_reader,params.window_size,N_closest=4))
 
         #Read RNA-Seq data
-        params.RNAseqReader = RNAseqReader(fname=input_folder + "mast_cells/RNA-seq/GSE75526_fpkm (1).pre.txt",
+        params.RNAseqReader = RNAseqReader(fname=input_folder + "mast_cells/RNA-seq/Our_rna_seq/StringTie on collection 64_ Gene abundance estimates/wt_1.fq.tabular",
                                            name="RNA")
-        params.RNAseqReader.read_file(rename={ "Gene name": "gene",
-                              "Gene start (bp)": "start",
-                              "Gene end (bp)": "end",
-                              "Chromosome/scaffold name": "chr",
+        params.RNAseqReader.read_file(rename={ "Gene ID": "gene",
+                              "Start": "start",
+                              "End": "end",
+                              "Reference": "chr",
                               "FPKM": "sigVal"},
                       sep="\t")
+        if rearrangement:
+            params.RNAseqReader.delete_region(deletion)
         RNAseqPG = SmallChipSeqPredictorGenerator(params.RNAseqReader,
                                                   window_size=params.window_size,
                                                   N_closest=3)
@@ -167,7 +177,7 @@ if __name__ == '__main__': #Requered for parallization, at least on Windows
             params.out_file = output_folder + "_".join(validate_chrs) + validation_file_name
         for validateChrName in validate_chrs:
             print("chromosome", validateChrName)
-            interval=Interval("chr5", 75000000, 76400000)
+            interval=Interval("chr5", 74000000, 76400000)
             params.sample_size = len(params.contacts_reader.data[validateChrName])
 
             # params.interval = Interval(validateChrName,
@@ -177,7 +187,7 @@ if __name__ == '__main__': #Requered for parallization, at least on Windows
             logging.getLogger(__name__).info("Generating validation dataset for interval "+str(params.interval))
             if not write_all_chrms_in_file:
                 validation_file_name = "validatingOrient." + str(params) + ".txt"
-                params.out_file = output_folder + params.interval.toFileName() + validation_file_name
+                params.out_file = output_folder + "NPC_1Kb"+params.interval.toFileName() + validation_file_name
             generate_data(params)
             if not write_all_chrms_in_file:
                 del(params.out_file)

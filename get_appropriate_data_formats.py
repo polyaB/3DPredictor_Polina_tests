@@ -31,5 +31,5 @@ def get_rna_format_for_3DPredictor(RNAseq_file, output_file, genome_assembly):
 	FinalData[["Chromosome/scaffold name", "Gene start (bp)", "Gene end (bp)", "FPKM", "Gene name"]].to_csv(output_file, sep="\t",index=False)
 
 # if __name__ == "__main__": get_rna_format_for_3DPredictor(sys.argv[1], sys.argv[2], sys.argv[3])
-get_rna_format_for_3DPredictor("D:/Users/Polina/3Dpredictor_deprecated/input/GSE75526_fpkm (1).txt",
-							   "D:/Users/Polina/3Dpredictor_deprecated/input/GSE75526_fpkm (1).pre.txt", "mm10")
+get_rna_format_for_3DPredictor("Z:/scratch/202011291709Polya_data/3DPredictor/input/mast_cells/RNA-seq/Our_rna_seq/wt_3.fq.tabular",
+							   "Z:/scratch/202011291709Polya_data/3DPredictor/input/mast_cells/RNA-seq/Our_rna_seq/wt_3.fq.tabular.pre", "mm10")

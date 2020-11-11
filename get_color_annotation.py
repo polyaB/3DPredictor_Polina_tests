@@ -1,8 +1,8 @@
 from ChiPSeqReader import ChiPSeqReader
 
-ctcf_reader = ChiPSeqReader("Z:/scratch/202001051010polina_data/3DPredictor/input/H1/CTCF/CTCF_H1_conservative_peaks.bed.gz")
+ctcf_reader = ChiPSeqReader("Z:/scratch/202002281332polina_data_2019/chip_mast_cells/mast_cells_WT/aquas_pipeline/peak/macs2/overlap/conservative_set/test3.bed")
 ctcf_reader.read_file()
-ctcf_reader.set_sites_orientation("Z:/scratch/202001051010polina_data/3DPredictor/input/H1/CTCF/CTCF_H1_conservative_peaks_orient.bed")
+ctcf_reader.set_sites_orientation("Z:/scratch/202002281332polina_data_2019/3DPredictor/input/mast_cells/CTCF/SRR908255_mast_CTCF_orient.bed")
 print(len(ctcf_reader.chr_data["chr7"].keys()))
 print(ctcf_reader.chr_data["chr7"].keys())
 ctcf_reader.chr_data["chr7"]["itemRGB"] = ["0,255,0"]*len(ctcf_reader.chr_data["chr7"])
